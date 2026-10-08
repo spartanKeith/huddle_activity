@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Stewardship Check</title>
+<meta name="description" content="Day 3 · My Work, My Stewardship — answer the five reflection questions one at a time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;1,500&family=Nunito+Sans:wght@400;600;700;800&display=swap">
+<style>
+/* ============================================================
+   SETTINGS: paste your Google Apps Script Web App URL in the
+   script below (SHEET_URL). See README.md.
+   ============================================================ */
+:root{
+  --bg:#F6F1E7; --card:#FFFDF8; --line:#E4DCCB; --ink:#1B2A3F; --muted:#5A5F6A;
+  --gold:#8A5E17; --gold-soft:#F1E3C6; --navy:#1B2A3F; --on-navy:#F6F1E7; --accent-btn:#D4A24C;
+  --btn-bg:#1B2A3F; --btn-fg:#F6F1E7; --err:#B3261E; --ok:#2E6B3F;
+  --display:'EB Garamond', Georgia, 'Times New Roman', serif;
+  --body:'Nunito Sans', 'Segoe UI', Arial, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#111A27; --card:#18243A; --line:#2C3B55; --ink:#EEE8DC; --muted:#AEB8C6;
+  --gold:#E0B465; --gold-soft:#2E2A1E; --navy:#0B121D; --on-navy:#EEE8DC;
+  --btn-bg:#D4A24C; --btn-fg:#1B2A3F; --err:#F2B8B5; --ok:#9FD8AE; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px);min-height:100vh}
+.wrap{max-width:620px;margin:0 auto;padding-block:32px 48px;display:flex;flex-direction:column;gap:24px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--gold)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(32px,7vw,44px);line-height:1.08;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:0;font-size:15.5px}
+.progress{display:flex;gap:6px}
+.progress span{flex:1;height:5px;border-radius:3px;background:var(--line);transition:background .3s}
+.progress span.on{background:var(--gold)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 24px;display:flex;flex-direction:column;gap:18px}
+.step-label{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:10px}
+.num{font-family:var(--display);font-size:30px;line-height:1;color:var(--gold);font-weight:600;letter-spacing:0}
+h2{font-family:var(--display);font-weight:600;font-size:clamp(26px,5.6vw,32px);line-height:1.15;margin:0;text-wrap:balance}
+.prompt{margin:0;color:var(--muted)}
+.prompt b{color:var(--ink)}
+label{font-weight:700;font-size:14px}
+.sr{position:absolute;left:-9999px}
+input,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px}
+textarea{min-height:130px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--accent-btn);outline-offset:2px}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.8}
+.hint{font-size:14px;color:var(--muted);margin:0}
+.checks{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+.checks li{font-size:13.5px;font-weight:700;background:var(--gold-soft);color:var(--gold);padding:6px 12px;border-radius:999px}
+.actions{display:flex;gap:12px;justify-content:space-between;align-items:center}
+button{font:inherit;font-weight:800;border-radius:999px;padding:13px 24px;cursor:pointer;border:1.5px solid transparent}
+.primary{background:var(--btn-bg);color:var(--btn-fg)}
+.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.err{color:var(--err);font-size:14px;margin:0;font-weight:700}
+.script{background:var(--navy);color:var(--on-navy);border-radius:16px;padding:24px;font-family:var(--display);font-size:21px;line-height:1.45;display:flex;flex-direction:column;gap:10px}
+.script em{color:var(--accent-btn);font-style:normal}
+.answers{display:flex;flex-direction:column;gap:14px;margin:0;padding:0;list-style:none}
+.answers li{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:2px}
+.answers .q{font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.06em}
+.answers .a{white-space:pre-wrap;overflow-wrap:anywhere}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.status{font-size:14px;font-weight:700;margin:0;min-height:1.2em}
+.status.ok{color:var(--ok)} .status.bad{color:var(--err)} .status.wait{color:var(--muted)}
+.closing{font-family:var(--display);font-style:italic;font-size:20px;color:var(--muted);text-align:center;margin:8px 0 0;text-wrap:balance}
+.fade{animation:in .28s ease}
+@keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.fade{animation:none}.progress span{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Day 3 · My Work, My Stewardship</span>
+    <h1>My Stewardship Check</h1>
+    <p class="sub">Answer one question at a time. Tap Finish to submit your answers.</p>
+  </header>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+  <form class="card fade" id="card" novalidate></form>
+  <p class="closing">“I may not control everything in my department, but I am accountable for what has been placed in my hands.”</p>
+</div>
+
+<script>
+/* ===== Paste your Apps Script Web App URL here (ends in /exec) ===== */
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbygg1KVmlSF64yBSO6E4rfAAgLuR2IPkgcTyhqyqbi3fzpujoeKuARE2qgjyEBgyRGSEQ/exec';
+
+const STEPS = [
+  {key:'name', intro:true},
+  {key:'q1', title:'What has been entrusted to me?', lead:'In my current role, I have been entrusted with…', hint:'Choose only one important responsibility.', ph:'e.g. handling customer concerns on our support line'},
+  {key:'q2', title:'What am I doing well?', lead:'One way I am faithfully handling this responsibility is…', hint:'Give a specific example.', ph:'e.g. I reply to every concern within the same day'},
+  {key:'q3', title:'Where is my stewardship gap?', lead:'One area where I need to become more faithful, responsible, or consistent is…', ph:'e.g. escalating problems early instead of waiting'},
+  {key:'q4', title:'What would a steward do?', lead:'If God has the deciding vote, the right response would be…', ph:'e.g. raise issues right away, even when it is uncomfortable'},
+  {key:'q5', title:'What will I do?', lead:'Within the next seven days, I will…', checks:['Specific','Within my control','Connected to my work','Can start this week','Observable'], ph:'e.g. flag any unresolved concern to my lead by 3 PM daily'}
+];
+const STORE = 'stewardship-check-v1';
+const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+
+let state = {step:0, a:{}, id:newId(), sent:false};
+try{ const s = JSON.parse(localStorage.getItem(STORE)||'null'); if(s && s.a) state = Object.assign(state, s); }catch(e){}
+function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
+
+const card = document.getElementById('card');
+const prog = document.getElementById('progress');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function renderProgress(){
+  prog.innerHTML = '';
+  for(let i=1;i<=5;i++){ const s=document.createElement('span'); if(state.step>=i) s.className='on'; prog.appendChild(s); }
+}
+
+function render(){
+  renderProgress();
+  card.classList.remove('fade'); void card.offsetWidth; card.classList.add('fade');
+  if(state.step >= STEPS.length) return renderSummary();
+  const st = STEPS[state.step];
+  if(st.intro){
+    card.innerHTML = `
+      <span class="step-label">Before we start</span>
+      <h2>Five questions. One responsibility. One commitment for this week.</h2>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label for="f-name">Your name</label>
+        <input id="f-name" type="text" autocomplete="name" maxlength="120" placeholder="this is optional btw :>" value="${esc(state.a.name||'')}">
+      </div>
+      <div class="actions"><span></span><button class="primary" type="submit">Start</button></div>`;
+  } else {
+    const n = state.step;
+    card.innerHTML = `
+      <span class="step-label"><span class="num">${n}</span> Question ${n} of 5</span>
+      <h2>${st.title}</h2>
+      <p class="prompt"><b>${st.lead}</b></p>
+      ${st.hint?`<p class="hint">${st.hint}</p>`:''}
+      ${st.checks?`<p class="hint">Make it:</p><ul class="checks">${st.checks.map(c=>`<li>${c}</li>`).join('')}</ul>`:''}
+      <label for="f-${st.key}" class="sr">${st.title}</label>
+      <textarea id="f-${st.key}" maxlength="2000" placeholder="${esc(st.ph)}">${esc(state.a[st.key]||'')}</textarea>
+      <p class="err" id="err" hidden>Write a short answer to continue.</p>
+      <div class="actions">
+        <button class="ghost" type="button" id="back">Back</button>
+        <button class="primary" type="submit">${n===5?'Finish':'Next'}</button>
+      </div>`;
+    document.getElementById('back').onclick = () => { store(); state.step--; save(); render(); };
+  }
+  const f = card.querySelector('input,textarea');
+  f.addEventListener('input', () => { store(); save(); const e=document.getElementById('err'); if(e) e.hidden=true; });
+  setTimeout(()=>{ try{ f.focus({preventScroll:true}); }catch(e){} }, 50);
+}
+
+function store(){
+  const st = STEPS[state.step]; if(!st) return;
+  const f = card.querySelector('input,textarea'); if(f) state.a[st.key] = f.value;
+}
+
+card.addEventListener('submit', e => {
+  e.preventDefault();
+  store();
+  const st = STEPS[state.step];
+  if(!st.intro && !(state.a[st.key]||'').trim()){ document.getElementById('err').hidden=false; return; }
+  state.step++;
+  if(state.step >= STEPS.length) state.sent = false; // finishing (again) = submit this version
+  save(); render(); window.scrollTo({top:0});
+});
+
+/* ---- Send answers to Google Sheets (Apps Script Web App) ---- */
+async function submitToSheet(){
+  const st = document.getElementById('status');
+  const retry = document.getElementById('retry');
+  if(!SHEET_URL || SHEET_URL.startsWith('PASTE_')){
+    st.className='status bad'; st.textContent='Not connected to the sheet yet (SHEET_URL is missing).'; return;
+  }
+  st.className='status wait'; st.textContent='Submitting your answers…'; retry.hidden = true;
+  const a = state.a;
+  const body = new URLSearchParams({
+    id: state.id,
+    name: (a.name||'').trim(),
+    q1: (a.q1||'').trim(), q2: (a.q2||'').trim(), q3: (a.q3||'').trim(),
+    q4: (a.q4||'').trim(), q5: (a.q5||'').trim(),
+    userAgent: navigator.userAgent.slice(0,200)
+  });
+  try{
+    // no-cors: Apps Script doesn't send CORS headers; the row is still written.
+    await fetch(SHEET_URL, {method:'POST', mode:'no-cors', body});
+    state.sent = true; save();
+    st.className='status ok'; st.textContent='Submitted. Thank you!';
+  }catch(err){
+    st.className='status bad'; st.textContent='Could not submit. Check your connection and try again.';
+    retry.hidden = false;
+  }
+}
+
+function blank(v){ return v && v.trim() ? esc(v.trim()) : '________'; }
+function plain(v){ return v && v.trim() ? v.trim() : '________'; }
+
+function renderSummary(){
+  const a = state.a;
+  const who = a.name && a.name.trim() ? `, ${esc(a.name.trim())}` : '';
+  card.innerHTML = `
+    <span class="step-label">Done${who}</span>
+    <h2>Your sharing for the department</h2>
+    <p class="status" id="status" aria-live="polite"></p>
+    <p class="hint">Read this out loud when it is your turn. About one minute.</p>
+    <div class="script">
+      <span>“I have been entrusted with <em>${blank(a.q1)}</em>.</span>
+      <span>One thing I am doing well is <em>${blank(a.q2)}</em>.</span>
+      <span>One area I need to improve is <em>${blank(a.q3)}</em>.</span>
+      <span>This week, I will <em>${blank(a.q5)}</em>.”</span>
+    </div>
+    <ul class="answers">
+      ${STEPS.slice(1).map((s,i)=>`<li><span class="q">${i+1} · ${s.title}</span><span class="a">${blank(a[s.key])}</span></li>`).join('')}
+    </ul>
+    <div class="row">
+      <button class="primary" type="button" id="retry" hidden>Try again</button>
+      <button class="ghost" type="button" id="copy">Copy my answers</button>
+      <button class="ghost" type="button" id="edit">Edit answers</button>
+      <button class="ghost" type="button" id="reset">Start over</button>
+    </div>`;
+  document.getElementById('retry').onclick = submitToSheet;
+  document.getElementById('edit').onclick = () => { state.step = 1; save(); render(); };
+  const resetBtn = document.getElementById('reset');
+  resetBtn.onclick = () => {
+    if(resetBtn.dataset.armed){ state={step:0,a:{},id:newId(),sent:false}; save(); render(); return; }
+    resetBtn.dataset.armed='1'; resetBtn.textContent='Tap again to clear';
+  };
+  document.getElementById('copy').onclick = async () => {
+    const text = [
+      'My Stewardship Check' + (a.name&&a.name.trim()?` — ${a.name.trim()}`:''),
+      '',
+      ...STEPS.slice(1).map((s,i)=>`${i+1}. ${s.title}\n${plain(a[s.key])}`)
+    ].join('\n');
+    const st = document.getElementById('status');
+    try{ await navigator.clipboard.writeText(text); st.className='status ok'; st.textContent='Copied. Paste it in your notes.'; }
+    catch(e){ st.className='status bad'; st.textContent='Copy is blocked here. Take a screenshot instead.'; }
+  };
+  if(state.sent){
+    const st = document.getElementById('status'); st.className='status ok'; st.textContent='Submitted. Thank you!';
+  } else {
+    submitToSheet();
+  }
+}
+
+render();
+</script>
+</body>
+</html>
