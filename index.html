@@ -177,8 +177,7 @@ async function submitToSheet(){
     id: state.id,
     name: (a.name||'').trim(),
     q1: (a.q1||'').trim(), q2: (a.q2||'').trim(), q3: (a.q3||'').trim(),
-    q4: (a.q4||'').trim(), q5: (a.q5||'').trim(),
-    userAgent: navigator.userAgent.slice(0,200)
+    q4: (a.q4||'').trim(), q5: (a.q5||'').trim()
   });
   try{
     // no-cors: Apps Script doesn't send CORS headers; the row is still written.
